@@ -59,4 +59,4 @@ bounceback = {'recipient_addr':failed_recipient_list,'creation_date':failed_date
 filtered_df = df[(df['creation_date_day'] >= 14) & (df['creation_date_day'] <= 16)] #筛选日期范围
 filtered_df
 
-filtered_df.to_excel(r'C:\Users\5734173\Downloads\bounceback_check_list_2.14-2.16.xlsx',sheet_name = 'bounceback email addr',columns = ['recipient_addr','creation_date','creation_time'], index = False)
+filtered_df.to_excel(r'\bounceback_check_list_2.14-2.16.xlsx',sheet_name = 'bounceback email addr',columns = ['recipient_addr','creation_date','creation_time'], index = False)
