@@ -1,1 +1,62 @@
-print("hello warren")
+import win32com.client
+import re
+import pandas as pd
+
+# 创建Outlook应用程序对象
+outlook_app = win32com.client.Dispatch("Outlook.Application")
+
+# 获取Outlook主文件夹
+namespace = outlook_app.GetNamespace("MAPI")
+#inbox = namespace.GetDefaultFolder(6)
+
+for account in namespace.Accounts:
+    print(account.deliverystore.displayname)
+
+inbox = namespace.folders("ameapricing@fedex.com").folders("Inbox") #更改Outlook账号和文件夹名
+emails = inbox.items
+count = 0
+for item in emails:
+    if item.Class == 46 and item.Subject.startswith('Undeliverable'): #筛选undeliverable
+        count = count + 1
+print("Count of Undeliverable: ",count)
+
+failed_recipient_list = []
+failed_date = []
+failed_date_yyyy = []
+failed_date_mm = []
+failed_date_dd = []
+failed_time = []
+for item in emails:
+    try:
+        if item.Class == 46 and item.Subject.startswith('Undeliverable'):
+            undeliverable_emailaddr = re.findall(r"[A-Za-z0-9\.\-+_]+@[A-Za-z0-9\.\-+_]+\.[A-Za-z]+", item.body)
+            creation_time = item.creationtime
+            
+            #
+            failed_recipient_list.append(undeliverable_emailaddr[0]) # 收件人地址
+            failed_date.append(creation_time.date()) # 日期（完整）
+            failed_date_yyyy.append(creation_time.date().year) #年
+            failed_date_mm.append(creation_time.date().month) # 月
+            failed_date_dd.append(creation_time.date().day) # 日
+            failed_time.append(creation_time.time()) # 发送时间
+            #
+    
+    except:
+        continue
+#获取failed_recipient_list,failed_date,failed_time三个字段
+
+# 预览
+print(failed_recipient_list[0])
+print(failed_date[0])
+print(failed_date_yyyy[0])
+print(failed_date_mm[0])
+print(failed_date_dd[0])
+print(failed_time[0])
+
+bounceback = {'recipient_addr':failed_recipient_list,'creation_date':failed_date,'creation_date_year':failed_date_yyyy,'creation_date_month':failed_date_mm,'creation_date_day':failed_date_dd,'creation_time':failed_time}
+# bounceback['recipient_addr']
+
+filtered_df = df[(df['creation_date_day'] >= 14) & (df['creation_date_day'] <= 16)] #筛选日期范围
+filtered_df
+
+filtered_df.to_excel(r'C:\Users\5734173\Downloads\bounceback_check_list_2.14-2.16.xlsx',sheet_name = 'bounceback email addr',columns = ['recipient_addr','creation_date','creation_time'], index = False)
